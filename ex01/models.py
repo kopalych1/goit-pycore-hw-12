@@ -312,19 +312,41 @@ class AddressBook(UserDict):
     def __iter__(self):
         return super().__iter__()
 
-    def save_data(self, filename="addressbook.pkl"):
-        """Save this address book to file using pickle."""
-        with open(filename, "wb") as f:
-            dump(self, f)
 
-    @classmethod
-    def load_data(cls, filename="addressbook.pkl") -> "AddressBook":
-        """Load address book from file using pickle."""
+class AddressBookStorage:
+    """Class responsible for saving and loading AddressBook data."""
+
+    def __init__(self, filename="addressbook.pkl"):
+        """
+        Initialize storage with filename.
+
+        Args:
+            filename (str): Path to the storage file.
+        """
+        self.filename = filename
+
+    def save(self, book: AddressBook) -> None:
+        """
+        Save address book to file using pickle.
+
+        Args:
+            book (AddressBook): Address book instance to save.
+        """
+        with open(self.filename, "wb") as f:
+            dump(book, f)
+
+    def load(self) -> AddressBook:
+        """
+        Load address book from file using pickle.
+
+        Returns:
+            AddressBook: Loaded address book or new empty one if file not found.
+        """
         try:
-            with open(filename, "rb") as f:
+            with open(self.filename, "rb") as f:
                 return load(f)
         except FileNotFoundError:
-            return cls()
+            return AddressBook()  # Return new empty address book
 
 
 # Tests
@@ -344,7 +366,8 @@ def make_record(name: str, phones=None, birthday=""):
 
 
 def main():
-    book = AddressBook.load_data()
+    storage = AddressBookStorage()
+    book = storage.load()
 
     for key in book:
         print(book[key])
@@ -355,7 +378,8 @@ def main():
     except ValueError:
         print("Users already exist")
 
-    book.save_data()
+    storage.save(book)
+    print("\nData saved successfully!")
 
 
 if __name__ == "__main__":
